@@ -28,6 +28,10 @@ offline_files/
 # Build artifacts
 telegraf_manager_offline.tar.gz
 
+# AI-specific context files
+GEMINI.md
+CLAUDE.md
+
 # OS specific
 .DS_Store
 Thumbs.db
