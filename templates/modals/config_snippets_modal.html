@@ -1,0 +1,23 @@
+<div class="modal fade" id="configSnippetsModal" tabindex="-1" aria-labelledby="configSnippetsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="configSnippetsModalLabel">生成的配置片段</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="configSnippetsContainer">
+                <!-- 配置片段将在这里动态生成 -->
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <div>
+                    <span id="selected-snippets-count" class="text-muted">已选择 0 个片段</span>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                    <button type="button" class="btn btn-primary" id="confirm-save-snippets-btn">确认保存</button>
+                </div>
+            </div>
+            <div id="modalAlertPlaceholder"></div>
+        </div>
+    </div>
+</div>

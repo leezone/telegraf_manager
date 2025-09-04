@@ -1,0 +1,99 @@
+<div class="modal fade" id="importExportModal" tabindex="-1" aria-labelledby="importExportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-fullscreen-xl-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importExportModalLabel">批量导入/导出数据点位</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- 导航标签 -->
+                <ul class="nav nav-tabs" id="importExportTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="import-tab-modal" data-bs-toggle="tab" data-bs-target="#import-panel-modal" type="button" role="tab">
+                            <i class="bi bi-upload me-2"></i>导入数据
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="export-tab-modal" data-bs-toggle="tab" data-bs-target="#export-panel-modal" type="button" role="tab">
+                            <i class="bi bi-download me-2"></i>导出数据
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- 标签页内容 -->
+                <div class="tab-content p-3">
+                    <!-- 导入面板 -->
+                    <div class="tab-pane fade show active" id="import-panel-modal" role="tabpanel">
+                        <div id="import-wizard">
+                            <!-- 步骤导航 -->
+                            <div class="nav nav-pills nav-fill mb-4" id="pills-tab-modal" role="tablist">
+                                <a class="nav-link active" id="step1-tab-modal"><strong>步骤 1:</strong> 上传文件</a>
+                                <a class="nav-link disabled" id="step2-tab-modal"><strong>步骤 2:</strong> 字段映射</a>
+                                <a class="nav-link disabled" id="step3-tab-modal"><strong>步骤 3:</strong> 预览与确认</a>
+                                <a class="nav-link disabled" id="step4-tab-modal"><strong>步骤 4:</strong> 完成</a>
+                            </div>
+
+                            <!-- 步骤内容 -->
+                            <div class="tab-content" id="pills-tabContent-modal">
+                                <!-- 步骤 1: 文件上传 -->
+                                <div class="tab-pane fade show active" id="step1-modal">
+                                    <div id="drop-zone-modal" class="p-5 text-center border rounded-3" style="border-style: dashed!important;">
+                                        <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary"></i>
+                                        <p class="mt-3">将 CSV 文件拖拽到此处，或点击选择文件</p>
+                                        <input type="file" id="csv-file-input-modal" class="d-none" accept=".csv">
+                                    </div>
+                                    <div id="file-info-modal" class="mt-3 d-none"></div>
+                                    <button id="next-step1-modal" class="btn btn-primary mt-3" disabled>下一步</button>
+                                </div>
+
+                                <!-- 步骤 2: 字段映射 -->
+                                <div class="tab-pane fade" id="step2-modal">
+                                    <div id="mapping-table-container-modal"></div>
+                                    <h5 class="mt-4">冲突处理规则</h5>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="conflict-rule-modal" id="rule-skip-modal" value="skip" checked>
+                                        <label class="form-check-label" for="rule-skip-modal">跳过重复记录</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="conflict-rule-modal" id="rule-overwrite-modal" value="overwrite">
+                                        <label class="form-check-label" for="rule-overwrite-modal">覆盖重复记录</label>
+                                    </div>
+                                    <button id="next-step2-modal" class="btn btn-primary mt-3">下一步</button>
+                                </div>
+
+                                <!-- 步骤 3: 数据预览 -->
+                                <div class="tab-pane fade" id="step3-modal">
+                                    <div id="preview-table-container-modal"></div>
+                                    <button id="start-import-modal" class="btn btn-success mt-3">确认并开始导入</button>
+                                </div>
+
+                                <!-- 步骤 4: 完成 -->
+                                <div class="tab-pane fade" id="step4-modal">
+                                    <div id="import-progress-modal" class="progress mb-3" style="height: 25px;">
+                                       <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                    </div>
+                                    <div id="import-summary-modal"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 导出面板 -->
+                    <div class="tab-pane fade" id="export-panel-modal" role="tabpanel">
+                         <h4 class="mb-3">导出数据点位</h4>
+                         <form id="export-form-modal">
+                            <div class="mb-3">
+                                <label for="export-source-modal" class="form-label">按数据来源筛选</label>
+                                <input type="text" class="form-control" id="export-source-modal" placeholder="例如：Modbus-TCP">
+                            </div>
+                            <div class="mb-3">
+                                <label for="export-batch-modal" class="form-label">按导入批次筛选</label>
+                                <input type="text" class="form-control" id="export-batch-modal" placeholder="输入导入批次ID">
+                            </div>
+                            <button type="submit" class="btn btn-success">导出为 CSV</button>
+                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

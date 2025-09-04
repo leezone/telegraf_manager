@@ -1,0 +1,47 @@
+<div class="modal fade" id="generateDefaultConfigModal" tabindex="-1" aria-labelledby="generateDefaultConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateDefaultConfigModalLabel">生成默认配置</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>请从下面的列表中选择要包含在示例配置文件中的 Telegraf 插件。插件已按类型分组。</p>
+                <div class="accordion" id="pluginAccordion">
+                    <!-- 插件手风琴将在这里动态生成 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="generatePreviewBtn">生成预览</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="configPreviewModal" tabindex="-1" aria-labelledby="configPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="configPreviewModalLabel">配置预览和保存</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="selectAllSnippetsCheckbox">
+                    <label class="form-check-label" for="selectAllSnippetsCheckbox">
+                        全选
+                    </label>
+                </div>
+                <div id="config-snippets-container" class="row">
+                    <!-- 配置片段将在这里显示 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="saveConfigSnippetsBtn">保存选中项为组件</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,232 @@
+
+{% extends "base.html" %}
+
+{% block title %}导入/导出 - Telegraf Manager{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-arrow-left-right me-2"></i>导入/导出数据点</h1>
+</div>
+
+<div id="alert-placeholder"></div>
+
+<ul class="nav nav-tabs" id="importExportTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="data-import-tab" data-bs-toggle="tab" data-bs-target="#data-import-pane" type="button" role="tab" aria-controls="data-import-pane" aria-selected="true">数据导入</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="import-history-tab" data-bs-toggle="tab" data-bs-target="#import-history-pane" type="button" role="tab" aria-controls="import-history-pane" aria-selected="false">导入记录</button>
+  </li>
+</ul>
+
+<div class="tab-content" id="importExportTabsContent">
+  <div class="tab-pane fade show active" id="data-import-pane" role="tabpanel" aria-labelledby="data-import-tab">
+    <div class="card mt-3">
+        <div class="card-header">
+            <ul class="nav nav-pills card-header-pills wizard-steps" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pills-step1-tab" data-bs-toggle="pill" data-bs-target="#step1" type="button" role="tab" aria-controls="step1" aria-selected="true"><span class="step-number">1</span><span class="step-text">上传文件</span></button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link disabled" id="pills-step2-tab" data-bs-toggle="pill" data-bs-target="#step2" type="button" role="tab" aria-controls="step2" aria-selected="false"><span class="step-number">2</span><span class="step-text">映射字段</span></button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link disabled" id="pills-step3-tab" data-bs-toggle="pill" data-bs-target="#step3" type="button" role="tab" aria-controls="step3" aria-selected="false"><span class="step-number">3</span><span class="step-text">预览与确认</span></button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link disabled" id="pills-step4-tab" data-bs-toggle="pill" data-bs-target="#step4" type="button" role="tab" aria-controls="step4" aria-selected="false"><span class="step-number">4</span><span class="step-text">完成导入</span></button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="pills-tabContent">
+                <!-- Step 1: Upload -->
+                <div class="tab-pane fade show active" id="step1" role="tabpanel">
+                    <div id="drop-zone" class="text-center p-5 border-2 border-dashed rounded-3" style="cursor: pointer;">
+                        <i class="bi bi-upload fs-1"></i>
+                        <p class="mt-2">将 CSV 文件拖拽到此处，或点击选择文件</p>
+                        <input type="file" id="csv-file-input" class="d-none" accept=".csv">
+                    </div>
+                    <div id="file-info" class="mt-3 d-none"></div>
+                    <div id="parsing-options" class="mt-3 d-none">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="file-encoding-select" class="form-label">文件编码</label>
+                                <select id="file-encoding-select" class="form-select">
+                                    <option value="UTF-8">UTF-8</option>
+                                    <option value="GBK">GBK</option>
+                                    <option value="GB2312">GB2312</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="header-row-input" class="form-label">标题行行号</label>
+                                <input type="number" id="header-row-input" class="form-control" value="1" min="1">
+                            </div>
+                        </div>
+                        <div id="raw-preview-container" class="mt-3 table-responsive" style="max-height: 300px;"></div>
+                    </div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button id="next-step1" class="btn btn-primary" disabled>下一步</button>
+                    </div>
+                </div>
+                <!-- Step 2: Mapping -->
+                <div class="tab-pane fade" id="step2" role="tabpanel">
+                    <p>请将CSV文件中的列，映射到数据库中的目标字段。</p>
+                    <div id="mapping-table-container" class="table-responsive"></div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button id="next-step2" class="btn btn-primary">下一步</button>
+                    </div>
+                </div>
+                <!-- Step 3: Preview -->
+                <div class="tab-pane fade" id="step3" role="tabpanel">
+                    <div id="preview-table-container" class="table-responsive"></div>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">冲突处理规则</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="conflict-rule" id="rule-skip" value="skip" checked>
+                                <label class="form-check-label" for="rule-skip">跳过冲突行</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="conflict-rule" id="rule-overwrite" value="overwrite">
+                                <label class="form-check-label" for="rule-overwrite">覆盖现有数据</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="conflict-rule" id="rule-rename" value="rename">
+                                <label class="form-check-label" for="rule-rename">重命名并新建</label>
+                            </div>
+                            <div id="rename-rule-options" class="mt-2" style="display: none;">
+                                <label for="rename-rule-input" class="form-label">重命名后缀</label>
+                                <input type="text" id="rename-rule-input" class="form-control" value="_new">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button id="start-import" class="btn btn-success">开始导入</button>
+                    </div>
+                </div>
+                <!-- Step 4: Progress/Result -->
+                <div class="tab-pane fade" id="step4" role="tabpanel">
+                    <h5>正在导入数据...</h5>
+                    <div class="progress" id="import-progress" style="height: 25px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    <div id="import-summary" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+  <div class="tab-pane fade" id="import-history-pane" role="tabpanel" aria-labelledby="import-history-tab">
+    <div class="card mt-3" id="import-history-section">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">历史导入记录</h5>
+            <button id="refresh-history-btn" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-clockwise"></i> 刷新
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>批次ID</th>
+                            <th>最后导入时间</th>
+                            <th class="text-end">点位数量</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="import-history-table-body">
+                        <!-- History rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Details Modal -->
+<div class="modal fade" id="batchDetailsModal" tabindex="-1" aria-labelledby="batchDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="batchDetailsModalLabel">导入批次详情</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>批次ID:</strong> <code id="modal-batch-id"></code></p>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm">
+            <thead>
+              <tr>
+                <th>指标名称</th>
+                <th>原始点位名</th>
+                <th>标准点位名</th>
+                <th>导入状态</th>
+                <th>锁定状态</th>
+                <th>历史</th>
+              </tr>
+            </thead>
+            <tbody id="batch-details-table-body">
+              <!-- Detailed rows will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <div>
+            <button type="button" id="rollback-batch-btn" class="btn btn-danger">回滚此批次</button>
+        </div>
+        <div class="d-flex align-items-center">
+            <div id="batch-details-pagination" class="me-3"></div>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/config-utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/papaparse/papaparse.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+<script src="{{ url_for('static', filename='js/point_info_import_export.js') }}"></script>
+
+<!-- Point History Modal -->
+<div class="modal fade" id="pointHistoryModal" tabindex="-1" aria-labelledby="pointHistoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pointHistoryModalLabel">数据点历史版本</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>指标名称:</strong> <code id="modal-history-measurement"></code></p>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm">
+            <thead>
+              <tr>
+                <th>版本</th>
+                <th>归档时间</th>
+                <th>变更原因</th>
+                <th>原始点位名</th>
+                <th>标准点位名</th>
+                <th>注释</th>
+              </tr>
+            </thead>
+            <tbody id="point-history-table-body">
+              <!-- History versions will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

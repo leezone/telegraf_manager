@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}日志审计 - Telegraf Manager{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lib/datatables/dataTables.bootstrap5.min.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">审计日志</h1>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="auditLogTable" class="table table-striped table-bordered" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>时间戳</th>
+                        <th>用户名</th>
+                        <th>IP 地址</th>
+                        <th>动作</th>
+                        <th>状态</th>
+                        <th>详情</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- DataTables will populate this section -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/lib/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/datatables/dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/datatables/dataTables.bootstrap5.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/config-utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin_audit_log.js') }}"></script>
+{% endblock %}

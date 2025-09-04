@@ -1,0 +1,113 @@
+<div class="modal fade" id="configGeneratorModal" tabindex="-1" aria-labelledby="configGeneratorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-fullscreen-lg-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="configGeneratorModalLabel">配置生成向导</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Wizard Navigation -->
+                <ul class="nav nav-pills nav-fill mb-4" id="config-wizard-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="wizard-step1-tab" data-bs-toggle="tab" href="#wizard-step1" role="tab" aria-controls="wizard-step1" aria-selected="true"><strong>步骤 1:</strong> 核心组件</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link disabled" id="wizard-step2-tab" data-bs-toggle="tab" href="#wizard-step2" role="tab" aria-controls="wizard-step2" aria-selected="false"><strong>步骤 2:</strong> 选择模板</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link disabled" id="wizard-step3-tab" data-bs-toggle="tab" href="#wizard-step3" role="tab" aria-controls="wizard-step3" aria-selected="false"><strong>步骤 3:</strong> 选择点位 & 预览</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link disabled" id="wizard-step4-tab" data-bs-toggle="tab" href="#wizard-step4" role="tab" aria-controls="wizard-step4" aria-selected="false"><strong>步骤 4:</strong> 保存配置</a>
+                    </li>
+                </ul>
+
+                <!-- Wizard Content -->
+                <div class="tab-content" id="config-wizard-content">
+                    <!-- Step 1: Core Components -->
+                    <div class="tab-pane fade show active" id="wizard-step1" role="tabpanel" aria-labelledby="wizard-step1-tab">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="newConfigName" class="form-label">新配置文件名称 <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="newConfigName" required placeholder="例如: my_awesome_config">
+                                    <span class="input-group-text">.conf</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="inputSourceSelect" class="form-label">输入源 (Input) <span class="text-danger">*</span></label>
+                                <select class="form-select" id="inputSourceSelect"></select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="outputSourceSelect" class="form-label">输出源 (Output) <span class="text-danger">*</span></label>
+                                <select class="form-select" id="outputSourceSelect"></select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="globalParamsSelect" class="form-label">全局参数 (可多选) <span class="text-danger">*</span></label>
+                                <select class="form-select" id="globalParamsSelect" multiple style="height: 150px;"></select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="processingTagsSelect" class="form-label">处理/转换插件 (可多选)</label>
+                                <select class="form-select" id="processingTagsSelect" multiple style="height: 150px;"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Select Template -->
+                    <div class="tab-pane fade" id="wizard-step2" role="tabpanel" aria-labelledby="wizard-step2-tab">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <h5>选择一个数据点模板</h5>
+                                <div id="pointTemplateContainer" class="wizard-list-container border rounded p-2" style="height: 50vh; overflow-y: auto;"></div>
+                            </div>
+                            <div class="col-md-7">
+                                <h5>模板内容预览</h5>
+                                <pre id="templatePreview" class="bg-light p-3 rounded" style="height: 50vh; overflow-y: auto;">请从左侧选择一个模板</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Select Points & Preview -->
+                    <div class="tab-pane fade" id="wizard-step3" role="tabpanel" aria-labelledby="wizard-step3-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>选择数据点位 (可多选)</h5>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div class="input-group" style="width: 70%;">
+                                        <select class="form-select" id="point-info-search-field" style="flex: 0 0 120px;">
+                                            <option value="import_batch" selected>按导入批次</option>
+                                            <option value="measurement">按指标名称</option>
+                                        </select>
+                                        <input type="text" id="pointInfoSearchInput" class="form-control" placeholder="输入搜索值...">
+                                    </div>
+                                    <div class="form-check form-switch align-self-center">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="filter-unlinked-points" checked>
+                                        <label class="form-check-label" for="filter-unlinked-points">过滤已配置</label>
+                                    </div>
+                                </div>
+                                <div id="pointInfoContainer" class="wizard-list-container border rounded p-2" style="height: 45vh; overflow-y: auto;"></div>
+                                <div id="pointInfoPagination" class="d-flex justify-content-center mt-2"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>最终配置预览</h5>
+                                <pre id="configPreview" class="bg-light p-3 rounded" style="height: 55vh; overflow-y: auto;">请选择数据点以生成预览</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Save Config -->
+                    <div class="tab-pane fade" id="wizard-step4" role="tabpanel" aria-labelledby="wizard-step4-tab">
+                        <h5>完成!</h5>
+                        <p>最终生成的配置如下所示。检查无误后，请点击“保存配置”。</p>
+                        <pre id="finalConfigPreview" class="bg-light p-3 rounded" style="height: 60vh; overflow-y: auto;"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="wizard-prev-btn" style="display: none;">上一步</button>
+                <button type="button" class="btn btn-primary" id="wizard-next-btn">下一步</button>
+                <button type="button" class="btn btn-success" id="wizard-save-btn" style="display: none;">保存配置</button>
+            </div>
+        </div>
+    </div>
+</div>

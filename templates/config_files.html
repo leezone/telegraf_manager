@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+
+{% block title %}配置文件管理 - Telegraf Manager{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lib/datatables/dataTables.bootstrap5.min.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-file-earmark-text me-2"></i>配置文件管理</h1>
+            <div>
+                <button class="btn btn-info me-2" onclick="openConfigDirectoryModal()">
+                    <i class="bi bi-folder me-1"></i>配置文件目录管理
+                </button>
+                <button class="btn btn-primary" onclick="openAddConfigModal()">
+                    <i class="bi bi-plus-circle me-1"></i>新建配置文件
+                </button>
+            </div>
+        </div>
+        <div id="alertPlaceholder"></div>
+    </div>
+</div>
+
+<!-- 配置文件目录管理模态框 -->
+<div class="modal fade" id="configDirectoryModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-folder me-2"></i>配置文件目录管理
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="configDirectoryAlertContainer"></div>
+                <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="configDirPath" class="form-label">配置文件目录</label>
+                            <input type="text" class="form-control" id="configDirPath" placeholder="/etc/telegraf/telegraf.d" value="/etc/telegraf/telegraf.d">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="configFileFilter" class="form-label">文件后缀过滤</label>
+                            <select class="form-select" id="configFileFilter" multiple>
+                                <option value=".conf" selected>.conf</option>
+                                <option value=".txt">.txt</option>
+                                <option value=".ini">.ini</option>
+                                <option value="*">所有文件</option>
+                            </select>
+                        </div>
+                    </div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>大小</th>
+                                <th>哈希</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="directoryFilesBody">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">请点击 "加载目录文件" 按钮</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="saveDirectorySettings()">保存</button>
+                    <button type="button" class="btn btn-info" onclick="loadDirectoryFiles()">加载目录文件</button>
+                    <button type="button" class="btn btn-success" onclick="importAllFilesFromDirectory()">
+                        <i class="bi bi-cloud-arrow-up me-1"></i>全部导入
+                    </button>
+                </div>
+        </div>
+    </div>
+</div>
+
+<!-- 配置文件列表 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-list me-2"></i>配置文件列表</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="configFilesTable" class="table table-hover" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>版本</th>
+                                <th>创建时间</th>
+                                <th>数据点同步</th>
+                                <th>运行状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- DataTables will populate this -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加配置文件模态框 -->
+<div class="modal fade" id="addConfigModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>新建配置文件
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addConfigForm">
+                    <div class="mb-3">
+                        <label for="configName" class="form-label">文件名</label>
+                        <input type="text" class="form-control" id="configName" placeholder="例如: telegraf.conf" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="configContent" class="form-label">配置内容</label>
+                        <textarea class="form-control" id="configContent" rows="15" placeholder="输入Telegraf配置内容..." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="addConfig()">
+                    <i class="bi bi-check-circle me-1"></i>创建
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 查看/编辑配置文件模态框 -->
+<div class="modal fade" id="viewConfigModal" tabindex="-1">
+    <div class="modal-dialog modal-xl"> {# Changed to modal-xl for more space #}
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-file-earmark-text me-2"></i><span id="viewConfigTitle">配置文件</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="viewConfigAlertContainer"></div>
+                <ul class="nav nav-tabs mb-3" id="configViewTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="content-tab" data-bs-toggle="tab" data-bs-target="#content-pane" type="button" role="tab" aria-controls="content-pane" aria-selected="true">配置内容</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="points-tab" data-bs-toggle="tab" data-bs-target="#points-pane" type="button" role="tab" aria-controls="points-pane" aria-selected="false">数据点位</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab" aria-controls="history-pane" aria-selected="false">版本历史</button>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="content-pane" role="tabpanel" aria-labelledby="content-tab">
+                        <div class="mb-3">
+                            <div id="configVersionInfo" class="alert alert-info">
+                                <strong>版本信息:</strong> 加载中...
+                            </div>
+                        </div>
+                        <form id="viewConfigForm">
+                            <input type="hidden" id="viewConfigId">
+                            <div class="mb-3">
+                                <label for="viewConfigName" class="form-label">文件名</label>
+                                <input type="text" class="form-control" id="viewConfigName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">配置内容</label>
+                                <div id="edit-section-tags" class="mb-2" style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                    <!-- Section tags will be injected here -->
+                                </div>
+                                <div id="edit-content-area">
+                                    <!-- Collapsible content will be injected here -->
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="points-pane" role="tabpanel" aria-labelledby="points-tab">
+                        <h5><i class="bi bi-cpu me-2"></i>关联的数据点位</h5>
+                        <div class="table-responsive" style="max-height: 400px;">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>指标名称 (Measurement)</th>
+                                        <th>原始点位名</th>
+                                        <th>标准化点位名</th>
+                                        <th>注释</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="linkedPointsTableBody">
+                                    <!-- Linked points will be rendered here by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="history-pane" role="tabpanel" aria-labelledby="history-tab">
+                        <h5><i class="bi bi-clock-history me-2"></i>版本历史</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>版本</th>
+                                        <th>状态</th>
+                                        <th>变更类型</th>
+                                        <th>创建时间</th>
+                                        <th>变更说明</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="configHistoryBody">
+                                    <tr><td colspan="6" class="text-center text-muted">加载版本历史...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div id="viewConfigAlertContainerFooter" class="w-100"></div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success me-2" onclick="downloadConfig()" id="downloadConfigBtn">
+                    <i class="bi bi-download me-1"></i>下载
+                </button>
+                <button type="button" class="btn btn-primary" onclick="updateConfig()" id="updateConfigBtn">
+                    <i class="bi bi-check-circle me-1"></i>保存
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 差异查看模态框 -->
+<div class="modal fade" id="diffModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="diffModalTitle">配置差异</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="diffContent">
+                    <div class="row">
+                        <div class="col-6">
+                            <h6>版本 <span id="diffOldVersion"></span></h6>
+                            <pre id="diffOldContent" class="bg-light p-2 rounded" style="max-height: 500px; overflow: auto;"></pre>
+                        </div>
+                        <div class="col-6">
+                            <h6>版本 <span id="diffNewVersion"></span></h6>
+                            <pre id="diffNewContent" class="bg-light p-2 rounded" style="max-height: 500px; overflow: auto;"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 配置关联管理模态框 -->
+<div class="modal fade" id="configAssociationModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-gear me-2"></i>配置解析 - <span id="associationConfigFileName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#inputs-pane" type="button" role="tab">
+                            <i class="bi bi-arrow-down-circle me-1"></i>输入插件
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#outputs-pane" type="button" role="tab">
+                            <i class="bi bi-arrow-up-circle me-1"></i>输出插件
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#agent-pane" type="button" role="tab">
+                            <i class="bi bi-cpu me-1"></i>Agent配置
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content">
+                    <!-- 输入插件选项卡 -->
+                    <div class="tab-pane fade show active" id="inputs-pane" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>插件名称</th>
+                                        <th>配置内容</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inputsTableBody">
+                                    <tr><td colspan="3" class="text-center text-muted">解析配置中...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- 输出插件选项卡 -->
+                    <div class="tab-pane fade" id="outputs-pane" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>插件名称</th>
+                                        <th>配置内容</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="outputsTableBody">
+                                    <tr><td colspan="3" class="text-center text-muted">解析配置中...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Agent配置选项卡 -->
+                    <div class="tab-pane fade" id="agent-pane" role="tabpanel">
+                        <div class="mb-3">
+                            <label class="form-label">Agent配置内容</label>
+                            <div id="agentConfigContent" class="border rounded p-3 bg-light" style="min-height: 200px;">
+                                <div class="text-muted">解析配置中...</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-outline-success" onclick="addAgentConfigToGlobalParameters()">
+                                <i class="bi bi-plus-circle me-1"></i>添加到全局参数管理
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-info" onclick="exportConfigAssociation()">
+                    <i class="bi bi-download me-1"></i>导出解析结果
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 文件导入冲突模态框 -->
+<div class="modal fade" id="importConflictModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>文件导入冲突</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>检测到同名配置文件已存在，且可能正在运行。请确认是否覆盖：</p>
+                <table class="table table-bordered table-sm">
+                    <tr>
+                        <th>文件名:</th>
+                        <td id="conflictFileName"></td>
+                    </tr>
+                    <tr>
+                        <th>现有版本哈希:</th>
+                        <td id="conflictExistingHash"></td>
+                    </tr>
+                    <tr>
+                        <th>新文件哈希:</th>
+                        <td id="conflictNewHash"></td>
+                    </tr>
+                    <tr>
+                        <th>是否正在运行:</th>
+                        <td id="conflictIsRunning"></td>
+                    </tr>
+                </table>
+                <p class="text-danger">覆盖将创建新版本并停用当前版本。如果当前版本正在运行，可能会导致进程中断。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmOverwriteBtn">确认覆盖</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'modals/data_snapshot_modal.html' %}
+
+{% include 'modals/file_preview_modal.html' %}
+{% include 'modals/parse_preview_modal.html' %}
+{% include 'modals/snippet_content_modal.html' %}
+{% include 'modals/save_snippets_modal.html' %}
+{% include 'modals/manual_parse_preview_modal.html' %}
+{% include 'modals/toml_extractor_wizard.html' %}
+
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- DataTables & Dependencies -->
+<script src="{{ url_for('static', filename='js/lib/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/datatables/dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/datatables/dataTables.bootstrap5.min.js') }}"></script>
+
+<!-- Page-specific scripts -->
+<script src="{{ url_for('static', filename='js/config-utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/config-main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/config-directory.js') }}"></script>
+{% endblock %}

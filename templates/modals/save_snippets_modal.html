@@ -1,0 +1,24 @@
+<!-- Save Snippets as Components Modal -->
+<div class="modal fade" id="saveSnippetsModal" tabindex="-1" aria-labelledby="saveSnippetsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveSnippetsModalLabel">保存片段为可复用组件</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="save-snippets-alert-container"></div>
+                <p class="text-muted">请为以下选中的配置片段命名，并指定它们要保存为哪种类型的组件。</p>
+                <form id="saveSnippetsForm">
+                    <!-- Snippets will be dynamically inserted here by JavaScript -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="executeSaveSnippets()">
+                    <i class="bi bi-check-circle me-2"></i>确认保存
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

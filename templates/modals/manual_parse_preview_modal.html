@@ -1,0 +1,35 @@
+<!-- Manual Parse Preview Modal -->
+<div class="modal fade" id="manualParsePreviewModal" tabindex="-1" aria-labelledby="manualParsePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="manualParsePreviewModalLabel">片段解析预览</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="manual-parse-alert-container"></div>
+                <p class="text-muted">以下是从该片段中解析出的数据点。确认后，它们将被导入到数据点管理中。</p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>指标名称 (Measurement)</th>
+                                <th>原始点位名 (Original Point Name)</th>
+                                <th>备注</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manualParseTableBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirmManualImportBtn">
+                    <i class="bi bi-check-circle me-2"></i>确认导入
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

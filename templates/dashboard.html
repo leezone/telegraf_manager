@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}仪表板 - Telegraf Manager{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-house-fill me-2"></i>仪表板</h1>
+            <div class="text-muted">
+                <i class="bi bi-calendar me-1"></i>
+                <span id="current-time"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-primary">
+                        <i class="bi bi-arrow-down-circle text-white"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="card-title text-muted mb-0">数据点</h6>
+                        <h3 class="mb-0" id="input-sources-count">-</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-success">
+                        <i class="bi bi-arrow-up-circle text-white"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="card-title text-muted mb-0">数据源</h6>
+                        <h3 class="mb-0" id="data-sources-count">-</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-info">
+                        <i class="bi bi-file-earmark-text text-white"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="card-title text-muted mb-0">配置文件</h6>
+                        <h3 class="mb-0" id="config-files-count">-</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-warning">
+                        <i class="bi bi-cpu text-white"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="card-title text-muted mb-0">运行进程</h6>
+                        <h3 class="mb-0" id="running-processes-count">-</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 快速操作 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-lightning-fill me-2"></i>快速操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <a href="{{ url_for('main.data_management') }}#point-info" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-graph-up me-1"></i>数据点管理
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('main.data_management') }}#data-sources" class="btn btn-outline-success w-100">
+                            <i class="bi bi-collection me-1"></i>数据源管理
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('main.config_files') }}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-file-plus me-1"></i>新建配置
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{{ url_for('main.processes') }}" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-play-circle me-1"></i>启动进程
+                        </a>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-activity me-2"></i>系统状态</h5>
+            </div>
+            <div class="card-body" id="system-status-card">
+                <div class="row">
+                    <div class="col-lg-6 border-end">
+                        <h6 class="text-muted">应用状态</h6>
+                        <ul class="list-unstyled mb-0 small">
+                            <li class="d-flex justify-content-between"><span>运行模式:</span> <strong id="status-app-mode">-</strong></li>
+                            <li class="d-flex justify-content-between"><span>活动线程:</span> <strong id="status-app-threads">-</strong></li>
+                            <li class="d-flex justify-content-between"><span>已运行:</span> <strong id="status-app-uptime">-</strong></li>
+                            <li class="d-flex justify-content-between"><span>Python:</span> <strong id="status-app-python">-</strong></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6">
+                        <h6 class="text-muted">依赖与数据</h6>
+                        <ul class="list-unstyled mb-0 small">
+                            <li class="d-flex justify-content-between"><span>Telegraf:</span> <strong id="status-dep-telegraf">-</strong></li>
+                            <li class="d-flex justify-content-between"><span>主数据库:</span> <strong id="status-db-sqlite-size">-</strong></li>
+                            <li class="d-flex justify-content-between text-muted"><small>最后修改:</small> <small id="status-db-sqlite-mtime">-</small></li>
+                            <li class="d-flex justify-content-between"><span>日志数据库:</span> <strong id="status-db-duckdb-size">-</strong></li>
+                            <li class="d-flex justify-content-between text-muted"><small>最后修改:</small> <small id="status-db-duckdb-mtime">-</small></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 进程列表 -->
+    <div class="col-9">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-list me-2"></i>进程总览</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>进程ID</th>
+                                <th>进程名称</th>
+                                <th>管理类型</th>
+                                <th>状态</th>
+                                <th>运行时长</th>
+                                <th>CPU</th>
+                                <th>内存</th>
+                            </tr>
+                        </thead>
+                        <tbody id="processesTableBody">
+                            <!-- Processes will be rendered here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近活动 -->
+    <div class="col-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>最近活动</h5>
+            </div>
+            <div class="card-body">
+                <div id="recent-activities">
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-hourglass-split fs-1 mb-2"></i>
+                        <p class="mb-0">正在加载活动记录...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

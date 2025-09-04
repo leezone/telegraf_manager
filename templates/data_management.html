@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}数据管理 - Telegraf Manager{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lib/datatables/dataTables.bootstrap5.min.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-database me-2"></i>数据管理</h1>
+    <div>
+        <button id="generate-default-config-btn" class="btn btn-primary lazy-load-btn" 
+                data-script-path="/static/js/generate_default_config.js" 
+                data-init-function="initializeDefaultConfigGenerator">
+            <i class="bi bi-gear-wide-connected me-2"></i>生成默认配置片段
+        </button>
+        <button id="config-generator-btn" class="btn btn-success lazy-load-btn" 
+                data-script-path="/static/js/config_generator.js" 
+                data-init-function="initWizardForConfigGenerator">
+            <i class="bi bi-magic me-2"></i>生成配置向导
+        </button>
+    </div>
+</div>
+
+<div id="alertPlaceholder"></div>
+
+<!-- 标签页 -->
+<ul class="nav nav-tabs" id="dataManagementTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link active" id="point-info-tab" data-bs-toggle="tab" href="#point-info" role="tab">数据点位管理</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="data-sources-tab" data-bs-toggle="tab" href="#data-sources" role="tab">数据源管理</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="global-parameters-tab" data-bs-toggle="tab" href="#global-parameters" role="tab">全局参数管理</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="point-templates-tab" data-bs-toggle="tab" href="#point-templates" role="tab">数据点模板管理</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="processing-tags-tab" data-bs-toggle="tab" href="#processing-tags" role="tab">处理转换配置管理</a>
+    </li>
+</ul>
+
+<div class="tab-content mt-4" id="dataManagementTabsContent">
+    <!-- 数据点位管理 -->
+    <div class="tab-pane fade show active" id="point-info" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5><i class="bi bi-graph-up me-2"></i>数据点位管理</h5>
+            <div>
+                <button class="btn btn-primary add-btn" data-type="point_info">
+                    <i class="bi bi-plus-circle me-1"></i>添加数据点
+                </button>
+                <a href="{{ url_for('main.import_export_page') }}" class="btn btn-info ms-2" target="_blank">
+                    <i class="bi bi-arrow-left-right me-1"></i>导入/导出
+                </a>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="point-info-table" class="table table-hover" style="width:100%">
+            </table>
+        </div>
+    </div>
+
+    <!-- 数据源管理 -->
+    <div class="tab-pane fade" id="data-sources" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5><i class="bi bi-collection me-2"></i>数据源管理</h5>
+            <button type="button" class="btn btn-success add-btn" data-type="data_sources">
+                <i class="bi bi-plus-circle me-1"></i>添加数据源
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table id="data-sources-table" class="table table-hover" style="width:100%">
+            </table>
+        </div>
+    </div>
+
+    <!-- 全局参数管理 -->
+    <div class="tab-pane fade" id="global-parameters" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5><i class="bi bi-globe me-2"></i>全局参数管理</h5>
+            <button type="button" class="btn btn-info add-btn" data-type="global_parameters">
+                <i class="bi bi-plus-circle me-1"></i>添加全局参数
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table id="global-parameters-table" class="table table-hover" style="width:100%">
+            </table>
+        </div>
+    </div>
+
+    <!-- 数据点模板 -->
+    <div class="tab-pane fade" id="point-templates" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5><i class="bi bi-journal-richtext me-2"></i>数据点模板管理</h5>
+            <button class="btn btn-primary add-btn" data-type="point_templates">
+                <i class="bi bi-plus-circle me-1"></i>创建新模板
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table id="point-templates-table" class="table table-hover" style="width:100%">
+            </table>
+        </div>
+    </div>
+
+    <!-- 处理转换标签 -->
+    <div class="tab-pane fade" id="processing-tags" role="tabpanel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5><i class="bi bi-tags me-2"></i>处理转换配置管理</h5>
+            <button class="btn btn-primary add-btn" data-type="processing_tags">
+                <i class="bi bi-plus-circle me-1"></i>创建新配置
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table id="processing-tags-table" class="table table-hover" style="width:100%">
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+{% include 'modals/generic_modal.html' %}
+{% include 'modals/config_generator_modal.html' %}
+{% include 'modals/generate_default_config_modal.html' %}
+{% include 'modals/config_snippets_modal.html' %}
+{% include 'modals/references_modal.html' %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/lib/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/datatables/dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/datatables/dataTables.bootstrap5.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/data_management.js') }}"></script>
+{% endblock %}

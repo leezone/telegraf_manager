@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}进程管理 - Telegraf Manager{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lib/datatables/dataTables.bootstrap5.min.css') }}">
+<style>
+    .table-sm-font {
+        font-size: 0.875rem;
+    }
+    .btn-group-sm > .btn {
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="alert-container"></div>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-cpu me-2"></i>Telegraf 进程管理</h1>
+            <button class="btn btn-success" onclick="openStartProcessModal()">
+                <i class="bi bi-play-circle me-1"></i>启动新进程
+            </button>
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="processTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="management-tab" data-bs-toggle="tab" data-bs-target="#management-pane" type="button" role="tab" aria-controls="management-pane" aria-selected="true">进程管理</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab" aria-controls="history-pane" aria-selected="false">历史进程</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="processTabsContent">
+    <div class="tab-pane fade show active" id="management-pane" role="tabpanel" aria-labelledby="management-tab">
+        <!-- 进程统计 -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card stat-card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-success">
+                                <i class="bi bi-hdd-stack text-white"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="card-title text-muted mb-0">系统管理进程</h6>
+                                <h3 class="mb-0 text-success" id="managed-processes-count">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card stat-card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="stat-icon bg-warning">
+                                <i class="bi bi-exclamation-triangle text-white"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="card-title text-muted mb-0">非系统管理进程</h6>
+                                <h3 class="mb-0 text-warning" id="non-managed-processes-count">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统管理进程列表 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-hdd-stack me-2"></i>系统管理进程</h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadProcesses()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>刷新
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm-font" id="processes-table">
+                                <thead>
+                                    <tr>
+                                        <th>进程ID</th>
+                                        <th>配置文件</th>
+                                        <th>状态</th>
+                                        <th>启动时间</th>
+                                        <th>运行时长</th>
+                                        <th>CPU</th>
+                                        <th>内存</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="processesTableBody">
+                                    <!-- Managed processes will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 非系统管理进程列表 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>非系统管理进程</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm-font">
+                                <thead>
+                                    <tr>
+                                        <th>进程ID</th>
+                                        <th>启动时间</th>
+                                        <th>命令行</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="nonManagedProcessesTableBody">
+                                    <!-- Non-managed processes will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="non-managed-processes-pagination" class="d-flex justify-content-center mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="history-pane" role="tabpanel" aria-labelledby="history-tab">
+        <!-- 历史进程记录 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>历史进程记录</h5>
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-sm btn-outline-primary me-2" onclick="loadHistory()">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>刷新
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteSelectedHistory()">
+                                    <i class="bi bi-trash me-1"></i>删除选中记录
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm-font" id="processHistoryTable" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th><input class="form-check-input" type="checkbox" id="selectAllHistoryHeaderCheckbox"></th>
+                                        <th>进程ID</th>
+                                        <th>进程名称</th>
+                                        <th>配置文件</th>
+                                        <th>启动时间</th>
+                                        <th>结束时间</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="processHistoryTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted py-4">
+                                            <i class="bi bi-hourglass-split fs-1 mb-2 d-block"></i>
+                                            正在加载历史记录...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 启动进程模态框 -->
+<div class="modal fade" id="startProcessModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-play-circle me-2"></i>启动 Telegraf 进程
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="startProcessAlertContainer"></div>
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="configSearchInput" placeholder="搜索配置文件...">
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAllConfigsCheckbox">
+                        <label class="form-check-label" for="selectAllConfigsCheckbox">
+                            全选
+                        </label>
+                    </div>
+                    <span id="selectionCounter" class="text-muted">已勾选: 0 / 0</span>
+                </div>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>配置文件</th>
+                                <th>版本</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="configSelectionTableBody">
+                            <!-- 配置文件将通过JS动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="startSelectedProcesses()">
+                    <i class="bi bi-play-circle me-1"></i>启动选中项
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 进程详情模态框 -->
+<div class="modal fade" id="processDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-2"></i>进程详情
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="processDetailContent">
+                    <!-- 进程详情内容 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 进程日志模态框 -->
+<div class="modal fade" id="processLogModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-journal-text me-2"></i>进程日志 - PID: <span id="logModalProcessPid"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="logFilterType" class="form-label">日志类型:</label>
+                    <select class="form-select" id="logFilterType">
+                        <option value="all">所有</option>
+                        <option value="stdout">标准输出 (stdout)</option>
+                        <option value="stderr">标准错误 (stderr)</option>
+                    </select>
+                </div>
+                <pre id="processLogContent" class="bg-light p-3 rounded" style="max-height: 60vh; overflow-y: scroll; font-size: 0.85em;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 重启进程模态框 -->
+<div class="modal fade" id="restartProcessModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>重启进程
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>为确保安全，重启前必须先测试配置文件。PID: <strong id="restartPid"></strong></p>
+                <div id="restartAlertContainer"></div>
+                <div id="testResultOutput" class="alert" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="testConfigBtn" onclick="runConfigTestForRestart()">
+                    <i class="bi bi-check-circle me-1"></i>测试配置
+                </button>
+                <button type="button" class="btn btn-warning" id="restartConfigBtn" onclick="runProcessRestart()" disabled>
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>确认重启
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'modals/data_snapshot_modal.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/lib/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/datatables/dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/datatables/dataTables.bootstrap5.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/config-utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+<script src="{{ url_for('static', filename='js/processes.js') }}"></script>
+{% endblock %}

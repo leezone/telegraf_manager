@@ -1,0 +1,76 @@
+<!-- Parse & Preview Modal -->
+<div class="modal fade" id="parsePreviewModal" tabindex="-1" aria-labelledby="parsePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-fullscreen-xl-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="parsePreviewModalLabel">解析结果与数据点预览</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="parse-preview-alert-container"></div>
+
+                <!-- Nav Tabs -->
+                <ul class="nav nav-tabs" id="parsePreviewTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="snippets-preview-tab" data-bs-toggle="tab" data-bs-target="#snippets-preview-panel" type="button" role="tab">
+                            <i class="bi bi-grid-1x2 me-2"></i>配置片段预览 <span id="snippets-preview-count" class="badge bg-primary rounded-pill">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="points-preview-tab" data-bs-toggle="tab" data-bs-target="#points-preview-panel" type="button" role="tab">
+                            <i class="bi bi-card-list me-2"></i>数据点预览 <span id="points-preview-count" class="badge bg-secondary rounded-pill">0</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content p-3 border border-top-0 rounded-bottom">
+                    <!-- Snippets Preview Panel -->
+                    <div class="tab-pane fade show active" id="snippets-preview-panel" role="tabpanel">
+                        <p class="text-muted">这是配置文件的完整结构化片段列表。您可以勾选片段，将其保存为可复用的组件。</p>
+                        <div class="table-responsive" style="max-height: 50vh;">
+                            <table class="table table-sm table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5%;"><input class="form-check-input" type="checkbox" id="selectAllSnippets"></th>
+                                        <th>类型</th>
+                                        <th>插件名称</th>
+                                        <th>内容预览</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="snippetsPreviewTableBody">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Points Preview Panel -->
+                    <div class="tab-pane fade" id="points-preview-panel" role="tabpanel">
+                        <p class="text-muted">以下是从配置文件中解析出的、可以作为独立数据点进行管理和监控的条目。请检查后确认导入。</p>
+                        <div class="table-responsive" style="max-height: 50vh;">
+                            <table class="table table-sm table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>指标名称 (Measurement)</th>
+                                        <th>原始点位名 (Original Point Name)</th>
+                                        <th>备注</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pointsPreviewTableBody">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="parsePreviewFooterBtn">
+                    <!-- Button text and onclick will be set dynamically by JavaScript -->
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

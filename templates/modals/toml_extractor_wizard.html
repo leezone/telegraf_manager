@@ -1,0 +1,97 @@
+<!-- Data Point Extractor Wizard Modal -->
+<div class="modal fade" id="tomlExtractorWizardModal" tabindex="-1" aria-labelledby="tomlExtractorWizardModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tomlExtractorWizardModalLabel"><i class="bi bi-magic me-2"></i>数据点位提取向导</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="toml-wizard-alert-container"></div>
+                
+                <!-- Stepper -->
+                <ul class="nav nav-pills nav-fill mb-4" id="toml-wizard-steps">
+                    <li class="nav-item"><a href="#" class="nav-link active" data-step="1"><strong>步骤 1:</strong> 选择数据源</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link disabled" data-step="2"><strong>步骤 2:</strong> 字段匹配</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link disabled" data-step="3"><strong>步骤 3:</strong> 预览与确认</a></li>
+                </ul>
+
+                <!-- Wizard Content -->
+                <div id="toml-wizard-content">
+                    <!-- Step 1: Select Data Source -->
+                    <div id="toml-wizard-step-1">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <h6>配置片段结构树</h6>
+                                <div id="toml-structure-tree" class="p-2 border rounded bg-light" style="height: 60vh; overflow: auto;">
+                                    <div class="text-center text-muted p-5"><span class="spinner-border spinner-border-sm"></span> 正在解析结构...</div>
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <h6>已选数据源</h6>
+                                <p class="text-muted small">请从左侧结构树中选择一个作为主数据列表（必须是列表类型），您也可以多选其父级节点以在下一步中使用它们的属性。</p>
+                                <ul id="toml-selected-sources" class="list-group" style="height: 55vh; overflow: auto;">
+                                    <li class="list-group-item text-center text-muted">尚未选择数据源</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Map Fields -->
+                    <div id="toml-wizard-step-2" class="d-none">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <h6>目标数据点字段</h6>
+                                <ul id="target-point-info-fields" class="list-group" style="height: 60vh; overflow: auto;">
+                                    <!-- Target fields will be populated here -->
+                                </ul>
+                            </div>
+                            <div class="col-md-2 text-center align-self-center">
+                                <i class="bi bi-arrow-left-right fs-1 text-primary"></i>
+                                <p class="text-muted">请匹配</p>
+                            </div>
+                            <div class="col-md-5">
+                                <h6>源数据可用属性</h6>
+                                <ul id="source-toml-fields" class="list-group" style="height: 60vh; overflow: auto;">
+                                    <!-- Source fields will be populated here -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Preview & Confirm -->
+                    <div id="toml-wizard-step-3" class="d-none">
+                        <h6>提取结果预览</h6>
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <div class="input-group input-group-sm">
+                                    <label class="input-group-text" for="toml-wizard-status-filter">按状态筛选</label>
+                                    <select class="form-select" id="toml-wizard-status-filter">
+                                        <option value="all" selected>全部</option>
+                                        <option value="new">新点位</option>
+                                        <option value="unlinked">可合并</option>
+                                        <option value="linked">冲突</option>
+                                        <option value="internal_duplicate">内部重复</option>
+                                        <option value="synced">已同步</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="toml-preview-table-container" class="table-responsive" style="height: 60vh; overflow: auto;">
+                            <table class="table table-striped table-sm table-bordered">
+                                <thead id="toml-preview-table-head"></thead>
+                                <tbody id="toml-preview-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-secondary" id="toml-wizard-prev-btn" disabled>上一步</button>
+                <button type="button" class="btn btn-info" id="toml-wizard-recheck-btn" style="display: none;"><i class="bi bi-arrow-clockwise me-1"></i>重新检查</button>
+                <button type="button" class="btn btn-primary" id="toml-wizard-next-btn">下一步</button>
+            </div>
+        </div>
+    </div>
+</div>

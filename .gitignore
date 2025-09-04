@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+.env
+
+# Database
+database/
+*.db
+*.db.wal
+*.duckdb
+*.duckdb.wal
+
+# Logs
+log/
+*.log
+
+# User-specific configurations and files
+configs/
+offline_files/
+
+# IDE / Editor specific
+.vscode/
+.idea/
+
+# Build artifacts
+telegraf_manager_offline.tar.gz
+
+# OS specific
+.DS_Store
+Thumbs.db
